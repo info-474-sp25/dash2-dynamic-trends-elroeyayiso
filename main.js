@@ -51,7 +51,7 @@ d3.csv("weather.csv").then(rawData => {
 
     const cityDataArr = dataMap2.map(([city, values]) => ({
         city,
-        values: values.map(([monthStr, avgPrecip]) => ({
+        values: values.map(([monthStr, avgPrecip]) => ({ // ChatGPT used to help write values code.
             month: d3.timeParse("%Y-%m")(monthStr),
             avgPrecip
         })).sort((a, b) => a.month - b.month)
@@ -216,15 +216,12 @@ function updateTrendline(type) {
 
 
     // ----------- CHART 2: Precipitation by City -----------
-    const xMonth = d3.scaleTime()
-        .domain([
-            d3.min(cityDataArr, c => d3.min(c.values, v => v.month)),
-            d3.max(cityDataArr, c => d3.max(c.values, v => v.month))
-        ])
-        .range([0, width]);
+    let xMonth = d3.scaleTime() 
+    .domain(d3.extent(precipData, d => d.date)) // ChatGPT used to help write this line (used .extent instead of .max).
+    .range([0, width]);
 
-    const yAvgPrecip = d3.scaleLinear()
-        .domain([0, d3.max(cityDataArr, c => d3.max(c.values, v => v.avgPrecip)) * 1.1])
+    let yAvgPrecip = d3.scaleLinear()
+        .domain([0, d3.max(cityDataArr.flatMap(d => d.values.map(v => v.avgPrecip)))]) // ChatGPT used to help write this line. 
         .range([height, 0]);
 
     const color = d3.scaleOrdinal(d3.schemeCategory10)
@@ -245,15 +242,15 @@ function updateTrendline(type) {
 
     svg2_precip.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(xMonth).tickFormat(d3.timeFormat("%Y-%m")));
+        .call(d3.axisBottom(xMonth).tickFormat(d3.timeFormat("%b %Y")));
 
     svg2_precip.append("g")
         .call(d3.axisLeft(yAvgPrecip));
 
     svg2_precip.append("text")
+        .attr("text-anchor", "middle")
         .attr("x", width / 2)
         .attr("y", height + 40)
-        .attr("text-anchor", "middle")
         .text("Month");
 
     svg2_precip.append("text")
@@ -261,7 +258,7 @@ function updateTrendline(type) {
         .attr("x", -height / 2)
         .attr("y", -50)
         .attr("text-anchor", "middle")
-        .text("Average Monthly Precipitation");
+        .text("Avg. Actual Monthly Precipitation");
 
     // ----------- LEGEND for precipitation chart -----------
     const legend = svg2_precip.append("g")
@@ -282,4 +279,71 @@ function updateTrendline(type) {
             .attr("alignment-baseline", "middle")
             .text(d.city);
     });
+
+    // --- INTERACTIVITY CHART 2 ---
+
+    // Tooltip
+
+    const allCityPoints = cityDataArr.flatMap(city => 
+        city.values.map(d => ({ ...d, city: city.city }))
+    );
+
+    const tooltip = d3.select("body") // Create tooltip
+        .append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background", "rgba(0, 0, 0, 0.7)")
+        .style("color", "white")
+        .style("padding", "10px")
+        .style("border-radius", "5px")
+        .style("font-size", "12px");
+
+    svg2_precip.selectAll(".data-point") // Create tooltip events
+        .data(allCityPoints) // Bind only the filtered STEM data
+        // .data([selectedCategoryData]) // D7: Bind only to category selected by dropdown menu
+        .enter()
+        .append("circle")
+        .attr("class", "data-point")
+        .attr("cx", d => xMonth(d.month))
+        .attr("cy", d => yAvgPrecip(d.avgPrecip))
+        .attr("r", 5)
+        .style("fill", d => color(d.city))
+        .style("opacity", 0)  // Make circles invisible by default
+        .on("mouseover", function(event, d) {
+            tooltip.style("visibility", "visible")
+            .html(`
+                <strong>City:</strong> ${d.city}<br>
+                <strong>Month:</strong> ${d3.timeFormat("%b %Y")(d.month)}<br>
+                <strong>Avg. Actual Precipitation (in):</strong> ${d.avgPrecip.toFixed(2)}
+            `)
+                .style("top", (event.pageY + 10) + "px") // Position relative to pointer
+                .style("left", (event.pageX + 10) + "px");
+
+            // Make the hovered circle visible
+            d3.select(this).style("opacity", 1);  // Set opacity to 1 on hover
+
+            // Create the large circle at the hovered point
+            svg2_precip.append("circle")
+                .attr("class", "hover-circle")
+                .attr("cx", xMonth(d.month))  // Position based on the xScale (year)
+                .attr("cy", yAvgPrecip(d.avgPrecip)) // Position based on the yScale (count)
+                .attr("r", 6)  // Radius of the large circle
+                .style("fill", color(d.city)) // Circle color
+                .style("stroke-width", 2);
+        })
+        .on("mousemove", function(event) {
+            tooltip.style("top", (event.pageY + 10) + "px")
+                .style("left", (event.pageX + 10) + "px");
+        })
+        .on("mouseout", function() {
+            tooltip.style("visibility", "hidden");
+
+            // Remove the hover circle when mouseout occurs
+            svg2_precip.selectAll(".hover-circle").remove();
+
+            // Make the circle invisible again
+            d3.select(this).style("opacity", 0);  // Reset opacity to 0 when not hovering
+        });
+
 });
