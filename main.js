@@ -182,7 +182,7 @@ function updateTrendline(type) {
         .datum(trendPoints)
         .attr("class", "trendline")
         .attr("fill", "none")
-        .attr("stroke", "orange")
+        .attr("stroke", "yellow")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5")
         .attr("d", lineTrend);
