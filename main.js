@@ -66,6 +66,7 @@ d3.csv("weather.csv").then(rawData => {
         .domain([d3.min(tempData, d => d.temp) - 5, d3.max(tempData, d => d.temp) + 5])
         .range([height, 0]);
 
+
     const lineTemp = d3.line()
         .x(d => xTemp(d.year))
         .y(d => yTemp(d.temp));
@@ -95,7 +96,7 @@ d3.csv("weather.csv").then(rawData => {
         .attr("x", -height / 2)
         .attr("y", -50)
         .attr("text-anchor", "middle")
-        .text("Record Max Temperature (°F)");
+        .text("Record Max Temperature");
 
 
 
@@ -120,7 +121,7 @@ function updateChart(selectedYear) {
         .attr("class", "highlight-label")
         .attr("x", xTemp(selected.year) + 8)
         .attr("y", yTemp(selected.temp) - 10)
-        .attr("fill", "red")
+        .attr("fill", "black")
         .text(`${selected.temp}°F`);
     }
   }
@@ -182,7 +183,7 @@ function updateTrendline(type) {
         .datum(trendPoints)
         .attr("class", "trendline")
         .attr("fill", "none")
-        .attr("stroke", "orange")
+        .attr("stroke", "red")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", "5,5")
         .attr("d", lineTrend);
@@ -206,7 +207,7 @@ function updateTrendline(type) {
         .datum(movingAvgData)
         .attr("class", "trendline")
         .attr("fill", "none")
-        .attr("stroke", "green")
+        .attr("stroke", "orange")
         .attr("stroke-width", 2)
         .attr("d", lineTrend);
     }
