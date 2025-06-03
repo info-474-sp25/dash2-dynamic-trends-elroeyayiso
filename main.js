@@ -120,7 +120,7 @@ function updateChart(selectedYear) {
         .attr("class", "highlight-label")
         .attr("x", xTemp(selected.year) + 8)
         .attr("y", yTemp(selected.temp) - 10)
-        .attr("fill", "red")
+        .attr("fill", "black")
         .text(`${selected.temp}°F`);
     }
   }
