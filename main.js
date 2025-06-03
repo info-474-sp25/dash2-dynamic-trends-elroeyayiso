@@ -236,7 +236,7 @@ function updateTrendline(type) {
             .datum(cityEntry.values)
             .attr("fill", "none")
             .attr("stroke", color(cityEntry.city))
-            .attr("stroke-width", 2)
+            .attr("stroke-width", 3)
             .attr("d", linePrecip);
     });
 
@@ -258,7 +258,7 @@ function updateTrendline(type) {
         .attr("x", -height / 2)
         .attr("y", -50)
         .attr("text-anchor", "middle")
-        .text("Avg. Actual Monthly Precipitation");
+        .text("Avg. Actual Monthly Precipitation (in)");
 
     // ----------- LEGEND for precipitation chart -----------
     const legend = svg2_precip.append("g")
@@ -268,14 +268,14 @@ function updateTrendline(type) {
         legend.append("rect")
             .attr("x", 0)
             .attr("y", i * 20)
-            .attr("width", 12)
-            .attr("height", 12)
+            .attr("width", 15)
+            .attr("height", 15)
             .attr("fill", color(d.city));
 
         legend.append("text")
-            .attr("x", 18)
+            .attr("x", 25)
             .attr("y", i * 20 + 10)
-            .style("font-size", "12px")
+            .style("font-size", "15px")
             .attr("alignment-baseline", "middle")
             .text(d.city);
     });
@@ -307,7 +307,7 @@ function updateTrendline(type) {
         .attr("class", "data-point")
         .attr("cx", d => xMonth(d.month))
         .attr("cy", d => yAvgPrecip(d.avgPrecip))
-        .attr("r", 5)
+        .attr("r", 10)
         .style("fill", d => color(d.city))
         .style("opacity", 0)  // Make circles invisible by default
         .on("mouseover", function(event, d) {
